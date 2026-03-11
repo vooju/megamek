@@ -95,6 +95,7 @@ public class AlphaStrikeMassConvert {
      */
     private static String clipboardHeaderString() {
         List<String> headers = new ArrayList<>();
+        headers.add("Name");
         headers.add("Chassis");
         headers.add("Model");
         headers.add("MUL ID");
@@ -102,6 +103,7 @@ public class AlphaStrikeMassConvert {
         headers.add("Type");
         headers.add("SZ");
         headers.add("MV");
+        headers.add("TMM");
         headers.add("Arm");
         headers.add("Str");
         headers.add("Thr");
@@ -109,6 +111,12 @@ public class AlphaStrikeMassConvert {
         headers.add("OV");
         headers.add("PV");
         headers.add("Specials");
+        headers.add("SquadSize");
+        headers.add("Quirks");
+        headers.add("FrontArc");
+        headers.add("LeftArc");
+        headers.add("RightArc");
+        headers.add("RearArc");
         headers.add("\n");
         return String.join("\t", headers);
     }
@@ -119,6 +127,7 @@ public class AlphaStrikeMassConvert {
      */
     private static StringBuilder clipboardElementString(AlphaStrikeElement element) {
         List<String> stats = new ArrayList<>();
+        stats.add(element.getName());
         stats.add(element.getChassis());
         stats.add(element.getModel());
         stats.add(element.getMulId() + "");
@@ -126,6 +135,7 @@ public class AlphaStrikeMassConvert {
         stats.add(element.getASUnitType().toString());
         stats.add(element.getSize() + "");
         stats.add(element.getMovementAsString());
+        stats.add(element.getTMM() + "");   // add this
         stats.add(element.getFullArmor() + "");
         stats.add(element.getFullStructure() + "");
         stats.add(element.usesThreshold() ? element.getThreshold() + "" : " ");
@@ -133,6 +143,12 @@ public class AlphaStrikeMassConvert {
         stats.add(element.getOV() + "");
         stats.add(element.getPointValue() + "");
         stats.add(AlphaStrikeHelper.getSpecialsExportString(INTERNAL_DELIMITER, element));
+        stats.add(element.getSquadSize() + "");   // add this
+        stats.add(element.getQuirks().getOptionListString(", ", null));
+        stats.add(element.getFrontArc() + "");   // add this
+        stats.add(element.getLeftArc() + "");   // add this
+        stats.add(element.getRightArc() + "");   // add this
+        stats.add(element.getRearArc() + "");   // add this
         stats.add("\n");
         return new StringBuilder(String.join(COLUMN_SEPARATOR, stats));
     }
