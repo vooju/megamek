@@ -55,7 +55,7 @@ import megamek.logging.MMLogger;
  * spacer to TAB and set the format of the Damage column to "Text").
  */
 public class AlphaStrikeMassConvert {
-
+1
     private static final String COLUMN_SEPARATOR = "\t";
     private static final String INTERNAL_DELIMITER = ",";
 
@@ -102,6 +102,7 @@ public class AlphaStrikeMassConvert {
         headers.add("Role");
         headers.add("Type");
         headers.add("SZ");
+        headers.add("Tonnage");
         headers.add("MV");
         headers.add("TMM");
         headers.add("Arm");
@@ -134,6 +135,7 @@ public class AlphaStrikeMassConvert {
         stats.add(element.getRole().toString());
         stats.add(element.getASUnitType().toString());
         stats.add(element.getSize() + "");
+        stats.add(element.Tonnage() + "");
         stats.add(element.getMovementAsString());
         stats.add(element.getTMM() + "");   // add this
         stats.add(element.getFullArmor() + "");
