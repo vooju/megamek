@@ -94,7 +94,8 @@ public class AlphaStrikeElement implements Serializable, ASCardDisplayable, ASSp
     private String chassis;
     private String model = "";
     private int mulId = -1;
-    private double tonnage = 0;
+    private int tonnage = 0;
+    private int cbillCost = 0;
     private int pointValue;
     private int basePointValue;
     private transient CalculationReport conversionReport = new DummyCalculationReport();
@@ -595,15 +596,29 @@ public class AlphaStrikeElement implements Serializable, ASCardDisplayable, ASSp
     /**
      * @return The tonnage of this AS element.
      */
-    public double getTonnage() {
+    public int getTonnage() {
         return tonnage;
     }
 
     /**
      * Sets this AS element's tonnage to the given value.
      */
-    public void setTonnage(double newTonnage) {
+    public void setTonnage(int newTonnage) {
         tonnage = newTonnage;
+    }
+
+    /**
+     * @return The C-Bill cost of this AS element.
+     */
+    public int getCbillCost() {
+        return cbillCost;
+    }
+
+    /**
+     * Sets this AS element's C-Bill cost.
+     */
+    public void setCbillCost(int newCbillCost) {
+        cbillCost = newCbillCost;
     }
 
     /**

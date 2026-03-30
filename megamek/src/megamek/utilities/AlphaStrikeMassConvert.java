@@ -103,6 +103,7 @@ public class AlphaStrikeMassConvert {
         headers.add("Type");
         headers.add("SZ");
         headers.add("Tonnage");
+        headers.add("CBills");
         headers.add("MV");
         headers.add("TMM");
         headers.add("Arm");
@@ -136,6 +137,7 @@ public class AlphaStrikeMassConvert {
         stats.add(element.getASUnitType().toString());
         stats.add(element.getSize() + "");
         stats.add(element.getTonnage() + "");
+        stats.add(element.getCbillCost() + "");
         stats.add(element.getMovementAsString());
         stats.add(element.getTMM() + "");   // add this
         stats.add(element.getFullArmor() + "");
