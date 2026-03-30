@@ -606,3 +606,14 @@ tasks.register('roundTripSaveUnitsTest', Test) {
         includeTestsMatching 'megamek.common.loaders.BulkRoundTripTest'
     }
 }
+
+tasks.register('unitAvailabilityExport', JavaExec) {
+    description = 'Exports faction/era availability for all units to TSV'
+    group = 'utility'
+
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'megamek.utilities.UnitAvailabilityExport'
+    workingDir = projectDir
+    args = ["${rootProject.layout.buildDirectory.get()}/availability-export"]
+    dependsOn classes
+}
