@@ -116,6 +116,7 @@ public final class ASConverter {
         element.setRole(entity.getRole());
         element.setFluff(entity.getFluff());
         element.setId(entity.getId());
+        element.setTonnage(entity.getTonnage());
 
         if (entity.getShortName().length() < 15) {
             conversionReport.addHeader("Alpha Strike Conversion for " + entity.getShortName());
