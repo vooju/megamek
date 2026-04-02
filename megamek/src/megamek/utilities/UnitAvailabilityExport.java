@@ -4,6 +4,7 @@ import megamek.client.ratgenerator.AvailabilityRating;
 import megamek.client.ratgenerator.ChassisRecord;
 import megamek.client.ratgenerator.ModelRecord;
 import megamek.client.ratgenerator.RATGenerator;
+import megamek.common.eras.Eras;
 import megamek.common.loaders.MekSummary;
 
 import java.io.BufferedWriter;
@@ -13,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -48,7 +50,7 @@ public class UnitAvailabilityExport {
             writer.newLine();
 
             Set<Integer> eras = new TreeSet<>(ratGen.getEraSet());
-            List<ModelRecord> models = new ArrayList<>(ratGen.getModelList());
+            List<ModelRecord> models = safeSnapshot(ratGen.getModelList());
 
             int rows = 0;
 
@@ -65,14 +67,14 @@ public class UnitAvailabilityExport {
                     String model = (ms == null) ? "" : ms.getModel();
                     String mulId = (ms == null) ? "" : String.valueOf(ms.getMulId());
 
-                    for (AvailabilityRating ar : new ArrayList<>(ratings)) {
+                    for (AvailabilityRating ar : ratings) {
                         writer.write(tsv(
                               unitName,
                               chassis,
                               model,
                               mulId,
                               String.valueOf(modelRecord.getIntroYear()),
-                              String.valueOf(era),
+                              getEraCode(era),
                               ar.getFactionCode(),
                               String.valueOf(ar.getAvailability()),
                               String.valueOf(ar.getStartYear())
@@ -98,7 +100,7 @@ public class UnitAvailabilityExport {
             writer.newLine();
 
             Set<Integer> eras = new TreeSet<>(ratGen.getEraSet());
-            List<ChassisRecord> chassisRecords = new ArrayList<>(ratGen.getChassisList());
+            List<ChassisRecord> chassisRecords = safeSnapshot(ratGen.getChassisList());
 
             int rows = 0;
 
@@ -110,10 +112,10 @@ public class UnitAvailabilityExport {
                         continue;
                     }
 
-                    for (AvailabilityRating ar : new ArrayList<>(ratings)) {
+                    for (AvailabilityRating ar : ratings) {
                         writer.write(tsv(
                               chassisRecord.getChassis(),
-                              String.valueOf(era),
+                              getEraCode(era),
                               ar.getFactionCode(),
                               String.valueOf(ar.getAvailability()),
                               String.valueOf(ar.getStartYear())
@@ -129,41 +131,49 @@ public class UnitAvailabilityExport {
     }
 
     private static void waitForRatGenerator(RATGenerator ratGen) throws InterruptedException {
-        int tries = 0;
         int stableTicks = 0;
-        int lastEraCount = -1;
-        int lastModelCount = -1;
-        int lastChassisCount = -1;
-
-        while (true) {
-            int eraCount = ratGen.getEraSet().size();
-            int modelCount = ratGen.getModelList().size();
-            int chassisCount = ratGen.getChassisList().size();
-
-            boolean ready = ratGen.isInitialized() && (eraCount > 0) && (modelCount > 0) && (chassisCount > 0);
-            boolean sameAsLast = (eraCount == lastEraCount)
-                  && (modelCount == lastModelCount)
-                  && (chassisCount == lastChassisCount);
-
-            if (ready && sameAsLast) {
-                stableTicks++;
-                if (stableTicks >= 8) {
-                    return;
-                }
-            } else {
+        int lastEras = -1, lastModels = -1, lastChassis = -1;
+        int tries = 0;
+        while (stableTicks < 8) {
+            Thread.sleep(500);
+            if (!ratGen.isInitialized()
+                    || ratGen.getEraSet().isEmpty()
+                    || ratGen.getModelList().isEmpty()
+                    || ratGen.getChassisList().isEmpty()) {
                 stableTicks = 0;
+            } else {
+                int eras = ratGen.getEraSet().size();
+                int models = ratGen.getModelList().size();
+                int chassis = ratGen.getChassisList().size();
+                if (eras == lastEras && models == lastModels && chassis == lastChassis) {
+                    stableTicks++;
+                } else {
+                    stableTicks = 0;
+                    lastEras = eras;
+                    lastModels = models;
+                    lastChassis = chassis;
+                }
             }
-
-            lastEraCount = eraCount;
-            lastModelCount = modelCount;
-            lastChassisCount = chassisCount;
-
-            Thread.sleep(250);
             tries++;
-            if (tries > 1200) {
+            if (tries > 600) {
                 throw new IllegalStateException("RATGenerator did not finish loading in time.");
             }
         }
+    }
+
+    /** Snapshot a live collection, retrying if the backing map is concurrently modified. */
+    private static <T> List<T> safeSnapshot(Collection<T> collection) {
+        while (true) {
+            try {
+                return new ArrayList<>(collection);
+            } catch (ConcurrentModificationException | ArrayIndexOutOfBoundsException ignored) {
+                // backing HashMap was modified mid-copy; retry
+            }
+        }
+    }
+
+    private static String getEraCode(int eraYear) {
+        return Eras.getEra(eraYear).code();
     }
 
     private static String tsv(String... values) {
